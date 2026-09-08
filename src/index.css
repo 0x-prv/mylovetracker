@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-purple-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
+  font-family:
+    "Poppins",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+img {
+  image-rendering: auto;
+}
+
+/* 16px+ on inputs prevents iOS Safari auto-zoom on focus */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* keep text comfortable on small screens */
+p,
+li {
+  line-height: 1.55;
+}
