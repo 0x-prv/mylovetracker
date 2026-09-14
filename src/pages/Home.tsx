@@ -1,5 +1,86 @@
 import { Link } from "react-router-dom";
 import { exercises } from "../lib/workout-guide";
+import { routines } from "../lib/routines";
+import { loadSchedule, todaysEntry } from "../lib/schedule";
+import { weekProgress } from "../lib/sessionHistory";
+
+function WeekStreak() {
+  const schedule = loadSchedule();
+  const { done, scheduled } = weekProgress((day) => schedule[day]);
+
+  if (scheduled === 0) return null;
+
+  return (
+    <p className="text-center text-sm font-medium text-purple-700 dark:text-purple-300">
+      {done} of {scheduled} scheduled workout{scheduled === 1 ? "" : "s"} done
+      this week
+    </p>
+  );
+}
+
+function TodaysWorkoutCard() {
+  const entry = todaysEntry();
+
+  if (entry === null) {
+    return (
+      <section className="flex flex-col items-start gap-3 rounded-3xl border border-dashed border-purple-300 bg-white/60 p-6 dark:border-purple-800 dark:bg-stone-900/60">
+        <div>
+          <h2 className="text-lg font-semibold">Today's Workout</h2>
+          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+            No weekly schedule yet. Pick a routine for each day to see your
+            workout here.
+          </p>
+        </div>
+        <Link
+          to="/routines"
+          className="rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-purple-700 hover:to-fuchsia-600"
+        >
+          Set up schedule
+        </Link>
+      </section>
+    );
+  }
+
+  if (entry === "rest") {
+    return (
+      <section className="flex items-center gap-4 rounded-3xl border border-purple-100 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-400 text-2xl shadow-sm">
+          😌
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold">Today's Workout</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Rest day — take it easy and recover.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  const routine = routines.find((r) => r.id === entry);
+  if (!routine) return null;
+
+  return (
+    <section className="flex items-center gap-4 rounded-3xl border border-purple-100 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-400 text-2xl shadow-sm">
+        🏋️
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-lg font-semibold">Today's Workout</h2>
+        <p className="text-sm text-stone-500 dark:text-stone-400">
+          {routine.name} · {routine.exercises.length} exercises
+        </p>
+      </div>
+      <Link
+        to={`/routines/${routine.id}/session`}
+        className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-purple-700 hover:to-fuchsia-600"
+      >
+        Start
+        <span aria-hidden>→</span>
+      </Link>
+    </section>
+  );
+}
 
 const features = [
   {
@@ -8,6 +89,16 @@ const features = [
     title: "Workout Guide",
     description: `${exercises.length} exercises with illustrations, muscles, and equipment.`,
     badge: `${exercises.length} exercises`,
+    accent: "bg-gradient-to-br from-purple-500 to-fuchsia-400",
+    soft: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+    available: true,
+  },
+  {
+    to: "/routines",
+    emoji: "🏋️",
+    title: "Home Workout",
+    description: "Ready-made no-equipment routines you can do at home.",
+    badge: "3 routines",
     accent: "bg-gradient-to-br from-purple-500 to-fuchsia-400",
     soft: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
     available: true,
@@ -50,6 +141,12 @@ export default function Home() {
           <span aria-hidden>→</span>
         </Link>
       </section>
+
+      {/* Today's workout from weekly schedule */}
+      <div className="flex w-full flex-col gap-3">
+        <TodaysWorkoutCard />
+        <WeekStreak />
+      </div>
 
       {/* Feature cards */}
       <section className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">

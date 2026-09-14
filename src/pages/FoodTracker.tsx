@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import BarcodeScanner from "../components/BarcodeScanner";
+import {
+  lookupProductByBarcode,
+  type OffProduct,
+} from "../lib/openFoodFacts";
 import {
   createMealEntry,
   getDayLog,
@@ -160,10 +165,88 @@ function ProfileModal({
   );
 }
 
+function ScannedProductCard({
+  product,
+  onDismiss,
+}: {
+  product: OffProduct | null;
+  onDismiss: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4 shadow-sm sm:p-5 dark:border-purple-900 dark:bg-purple-950/40">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-stone-500 dark:text-stone-400">
+          Scanned product
+        </h2>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss scanned product"
+          className="flex size-9 items-center justify-center rounded-full text-stone-400 transition hover:bg-purple-100 hover:text-purple-700 dark:hover:bg-purple-900 dark:hover:text-purple-300"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+      {product ? (
+        <>
+          <p className="font-semibold">{product.name}</p>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            <span className="rounded-full bg-orange-100 px-2 py-0.5 font-medium text-orange-800 dark:bg-orange-950 dark:text-orange-300">
+              {product.calories} kcal
+            </span>
+            <span className="rounded-full bg-rose-100 px-2 py-0.5 font-medium text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+              P {product.protein}g
+            </span>
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              C {product.carbs}g
+            </span>
+            <span className="rounded-full bg-fuchsia-100 px-2 py-0.5 font-medium text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-300">
+              F {product.fat}g
+            </span>
+          </div>
+          <p className="text-xs text-stone-400 dark:text-stone-500">
+            Values are per 100 g serving.
+          </p>
+        </>
+      ) : (
+        <p className="text-sm font-medium text-stone-600 dark:text-stone-300">
+          Not found — enter manually.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function FoodTracker() {
   const [day, setDay] = useState<DayLog>(() => getDayLog(todayKey()));
   const [profile, setProfile] = useState<UserProfile | null>(() => getProfile());
   const [showProfileModal, setShowProfileModal] = useState(() => !getProfile());
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannedProduct, setScannedProduct] = useState<OffProduct | null>(null);
+
+  const handleScan = async (barcode: string) => {
+    setShowScanner(false);
+    console.log("Scanned barcode:", barcode);
+    try {
+      const product = await lookupProductByBarcode(barcode);
+      setScannedProduct(product);
+    } catch (error) {
+      console.error("Open Food Facts lookup failed:", error);
+      setScannedProduct(null);
+    }
+  };
 
   // name/number inputs kept as strings for smooth typing
   const [name, setName] = useState("");
@@ -266,6 +349,18 @@ export default function FoodTracker() {
           profile={profile}
           onClose={() => setShowProfileModal(false)}
           onSave={saveProfileAndClose}
+        />
+      )}
+      {showScanner && (
+        <BarcodeScanner
+          onScan={handleScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+      {scannedProduct !== null && (
+        <ScannedProductCard
+          product={scannedProduct}
+          onDismiss={() => setScannedProduct(null)}
         />
       )}
       <header className="flex flex-col gap-1">
@@ -470,12 +565,21 @@ export default function FoodTracker() {
                 />
               </label>
             </div>
-            <button
-              type="submit"
-              className="min-h-11 self-start rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-purple-700 hover:to-fuchsia-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
-            >
-              Add meal
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="submit"
+                className="min-h-11 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-purple-700 hover:to-fuchsia-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+              >
+                Add meal
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="min-h-11 rounded-full bg-stone-100 px-5 py-2.5 text-sm font-semibold text-stone-600 transition hover:bg-stone-200 hover:text-stone-900 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+              >
+                Scan Barcode
+              </button>
+            </div>
           </form>
 
           {/* Meals list */}

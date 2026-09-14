@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 const navItems = [
   { to: "/", label: "Home", emoji: "🏠", end: true },
   { to: "/exercises", label: "Exercises", emoji: "💪", end: false },
+  { to: "/routines", label: "Routines", emoji: "🏋️", end: false },
   { to: "/food", label: "Food", emoji: "🍽️", end: false },
   { to: "/food/plan", label: "Plan", emoji: "📋", end: false },
 ];

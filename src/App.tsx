@@ -5,6 +5,8 @@ import Exercises from "./pages/Exercises";
 import ExerciseDetail from "./pages/ExerciseDetail";
 import FoodTracker from "./pages/FoodTracker";
 import FoodPlan from "./pages/FoodPlan";
+import HomeWorkout from "./pages/HomeWorkout";
+import WorkoutSession from "./pages/WorkoutSession";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -14,6 +16,9 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="exercises" element={<Exercises />} />
         <Route path="exercises/:slug" element={<ExerciseDetail />} />
+        <Route path="routines" element={<HomeWorkout />} />
+        <Route path="routines/:id" element={<HomeWorkout />} />
+        <Route path="routines/:id/session" element={<WorkoutSession />} />
         <Route path="food" element={<FoodTracker />} />
         <Route path="food/plan" element={<FoodPlan />} />
         <Route path="*" element={<NotFound />} />
